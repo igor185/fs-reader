@@ -7,6 +7,31 @@
 
 #include "FAT16.h"
 
+std::string get_date(uint16_t date){
+    tm time_st = {};
+    time_st.tm_mday = date & 0x1F;
+    time_st.tm_mon = ((date >> 5) & 0x0F) - 1;
+    time_st.tm_year = ((date >> 9) & 0x7F) + 80;
+
+    char buff[20];
+    strftime (buff, sizeof(buff), "%F", &time_st);
+
+    return buff;
+}
+
+std::string get_time( uint16_t time){
+    tm time_st = {};
+
+    time_st.tm_sec = (time & 0x1F) * 2;
+    time_st.tm_min = (time >> 5) & 0x3F;
+    time_st.tm_hour = (time >> 11) & 0x1F;
+
+    char buff[20];
+    strftime (buff, sizeof(buff), "%X", &time_st);
+
+    return buff;
+}
+
 std::string parse_filename(const std::string& filename) {
     std::string res;
 
@@ -22,28 +47,14 @@ std::string parse_filename(const std::string& filename) {
     return res;
 }
 
-std::string get_time(uint16_t date, uint16_t time){
-    tm time_st = {};
-    time_st.tm_mday = date & 0x1F;
-    time_st.tm_mon = ((date >> 5) & 0x0F) - 1;
-    time_st.tm_year = ((date >> 9) & 0x7F) + 80;
-
-    time_st.tm_sec = (time & 0x1F) * 2;
-    time_st.tm_min = (time >> 5) & 0x3F;
-    time_st.tm_hour = (time >> 11) & 0x1F;
-
-    char buff[20];
-    strftime (buff, sizeof(buff), "%F:%X", &time_st);
-
-    return buff;
-}
-
 void parse_fat16(const std::string &path) {
-    std::ifstream fs{"../data/fat16.img", std::ios::binary};
+    std::ifstream fs{path, std::ios::binary};
 
 
     fat_boot_sector_common bs_info{};
     fs.read((char *) &bs_info, sizeof(fat_boot_sector_common));
+
+    bs_info.oem_name[8] = '\0';
 
     printf("OEM name:                   %s\n", bs_info.oem_name);
     printf("Bytes per sector:           %d\n", bs_info.bytes_per_sector);
@@ -63,6 +74,9 @@ void parse_fat16(const std::string &path) {
     fat_boot_sector_fat16 bs_info_16{};
     fs.read((char *) &bs_info_16, sizeof(fat_boot_sector_fat16));
 
+    bs_info_16.volume_label[10] = '\0';
+    bs_info_16.fs_type[7] = '\0';
+
     printf("Drive number:               %d\n", bs_info_16.drive_number);
     printf("Extended boot signature:    %s\n", bs_info_16.boot_signature == 0x29 ? "valid" : "invalid");
     printf("Volume serial number:       %d\n", bs_info_16.volume_id);
@@ -81,17 +95,17 @@ void parse_fat16(const std::string &path) {
         fs.read((char *) &root_dir, sizeof(fat_directory_entry_t));
         if (root_dir.filename[0] != 0x00 && static_cast<unsigned char>(root_dir.filename[0]) != 0xe5) {
             printf("Name: %s\n", parse_filename(root_dir.filename).c_str());
-            printf("Size: %s\n", (root_dir.attributes & 0x10) ? "directory" : std::to_string(root_dir.file_size).c_str());
-            printf("Created: %s\n", get_time(root_dir.creat_date, root_dir.creat_time).c_str());
-            printf("Modified: %s\n", get_time(root_dir.modified_date, root_dir.modified_time).c_str());
+            printf("Size: %s\n", (root_dir.attributes & 0x10u) ? "directory" : std::to_string(root_dir.file_size).c_str());
+            printf("Created: %s\n", (get_date(root_dir.creat_date) + ":" + get_time(root_dir.creat_time)).c_str());
+            printf("Modified: %s\n", (get_date(root_dir.modified_date) + ":" + get_time(root_dir.modified_time)).c_str());
             printf("Attributes: \n");
-            if (root_dir.attributes & 0x01 ) printf("\tRead-only\n");
-            if (root_dir.attributes & 0x02 ) printf("\tHidden file\n");
-            if (root_dir.attributes & 0x04 ) printf("\tSystem file\n");
-            if (root_dir.attributes & 0x08 ) printf("\tVolume label\n");
-            if (root_dir.attributes & 0x0f ) printf("\tLong file name\n");
-            if (root_dir.attributes & 0x20 ) printf("\tArchive\n");
-
+            if (root_dir.attributes & 0x01u ) printf("\tRead-only\n");
+            if (root_dir.attributes & 0x02u ) printf("\tHidden file\n");
+            if (root_dir.attributes & 0x04u ) printf("\tSystem file\n");
+            if (root_dir.attributes & 0x08u ) printf("\tVolume label\n");
+            if (root_dir.attributes & 0x0fu ) printf("\tLong file name\n");
+            if (root_dir.attributes & 0x20u ) printf("\tArchive\n");
+            printf("First sector: %d\n", root_dir.first_cluster_addr_low);
 
             printf("\n");
             file_num++;

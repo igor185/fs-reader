@@ -16,14 +16,17 @@ option(ENABLE_SANITIZERS    "Use sanitizers to detect errors."      OFF) # Optio
 
 # Project source compilation
 include_directories(inc)
+
+add_library(ext2 STATIC inc/EXT2.h src/ext2.cpp)
 add_library(fat16 STATIC
-            src/fat16.cpp inc/FAT16.h src/fat16.cpp)
+            src/fat16.cpp inc/FAT16.h src/fat16.cpp src/ext2.cpp)
 add_executable(reader src/main.cpp)
-target_link_libraries(reader fat16)
+target_link_libraries(ext2 fat16)
+target_link_libraries(reader fat16 ext2)
 
 
 # Define ALL_TARGETS variable to use in some directives
-set(ALL_TARGETS fat16 reader)
+set(ALL_TARGETS fat16 reader ext2)
 
 # Include default CMake configuration
 include(cmake/Config.cmake)

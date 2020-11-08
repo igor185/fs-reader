@@ -1,3 +1,4 @@
 # Installing all Boost libraries will slow down GitHub build.
 # It is acceptable if there are too many Boost libraries to manage.
 # libboost-all-dev
+e2fslibs-dev

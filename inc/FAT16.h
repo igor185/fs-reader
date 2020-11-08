@@ -5,6 +5,10 @@
 
 #include <string>
 
+std::string get_date(uint16_t date);
+
+std::string get_time( uint16_t time);
+
 struct fat_boot_sector_common
 {
     uint8_t jump_addr[3]; // 0-2 assembly code
