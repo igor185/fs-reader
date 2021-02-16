@@ -1,9 +1,3 @@
-# Lab 2 Option 3: Adder
-
-## Team
-
- - [Volodymyr Chernetskyi](https://github.com/chernetskyi)
-
 ## Prerequisites
 
  - **C++ compiler** - needs to support **C++17** standard
