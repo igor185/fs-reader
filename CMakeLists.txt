@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(adder
+project(reader
         VERSION 1.0.0
         DESCRIPTION "Add two numbers"
         HOMEPAGE_URL "https://github.com/chernetskyi/cpp-template"
@@ -16,19 +16,17 @@ option(ENABLE_SANITIZERS    "Use sanitizers to detect errors."      OFF) # Optio
 
 # Project source compilation
 include_directories(inc)
-add_library(arithmetic STATIC
-            src/arithmetic/arithmetic.cpp inc/arithmetic/arithmetic.hpp)
-add_executable(add src/main.cpp)
-target_link_libraries(add arithmetic)
 
-# Add external packages
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.71.0 COMPONENTS program_options REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
-target_link_libraries(add Boost::program_options)
+add_library(ext2 STATIC inc/EXT2.h src/ext2.cpp)
+add_library(fat16 STATIC
+            src/fat16.cpp inc/FAT16.h src/fat16.cpp src/ext2.cpp)
+add_executable(reader src/main.cpp)
+target_link_libraries(ext2 fat16)
+target_link_libraries(reader fat16 ext2)
+
 
 # Define ALL_TARGETS variable to use in some directives
-set(ALL_TARGETS arithmetic add)
+set(ALL_TARGETS fat16 reader ext2)
 
 # Include default CMake configuration
 include(cmake/Config.cmake)

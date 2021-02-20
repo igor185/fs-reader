@@ -1,3 +1,9 @@
+# FS-reader
+
+## Team
+
+ - [Babin Igor](https://github.com/igor185)
+
 ## Prerequisites
 
  - **C++ compiler** - needs to support **C++17** standard
@@ -7,11 +13,7 @@ Dependencies (such as development libraries) can be found in the [dependencies f
 
 ## Installing
 
-1. Clone the project.
-    ```bash
-    git clone git@github.com:chernetskyi/cpp-template.git
-    ```
-2. Install required packages.
+1. Install required packages.
 
    On Ubuntu:
    ```bash
@@ -22,7 +24,7 @@ Dependencies (such as development libraries) can be found in the [dependencies f
    [[ -r dependencies/homebrew.txt ]] && sed 's/#.*//' dependencies/homebrew.txt | xargs brew install
    ```
    Use Conan on Windows.
-3. Build.
+2. Build.
     ```bash
     cmake -Bbuild
     cmake --build build
@@ -31,9 +33,7 @@ Dependencies (such as development libraries) can be found in the [dependencies f
 ## Usage
 
 ```bash
-add [a] [b]
+./reader --type EXT --path ../data/ext2.img
 ```
-
-If less than two numbers provided, zeroes are used instead. If more - an error occurs.
 
 Help flags `-h`/`--help` support is available.

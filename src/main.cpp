@@ -1,44 +1,50 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-// Remember to include ALL the necessary headers!
+#include <cstring>
 #include <iostream>
-#include <boost/program_options.hpp>
+#include "FAT16.h"
+#include "EXT2.h"
 
-// By convention, C++ header files use the `.hpp` extension. `.h` is OK too.
-#include "arithmetic/arithmetic.hpp"
+void print_help(){
+    std::cout << "Usage: "
+    << "-t|--type EXT|FAT16 -type of file system\n"
+    << "-p|--path path - path to image\n"
+    << "[-h|--help] - print this message" << std::endl;
+    exit(EXIT_SUCCESS);
+}
 
 int main(int argc, char **argv) {
-    int variable_a, variable_b;
+    std::string type, path;
 
-    namespace po = boost::program_options;
+//     type = "FAT16", path = "../data/fat16.img";
+//     type = "EXT", path = "../data/ext2.img";
 
-    po::options_description visible("Supported options");
-    visible.add_options()
-            ("help,h", "Print this help message.");
 
-    po::options_description hidden("Hidden options");
-    hidden.add_options()
-            ("a", po::value<int>(&variable_a)->default_value(0), "Variable A.")
-            ("b", po::value<int>(&variable_b)->default_value(0), "Variable B.");
-
-    po::positional_options_description p;
-    p.add("a", 1);
-    p.add("b", 1);
-
-    po::options_description all("All options");
-    all.add(visible).add(hidden);
-
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(all).positional(p).run(), vm);
-    po::notify(vm);
-
-    if (vm.count("help")) {
-        std::cout << "Usage:\n  add [a] [b]\n" << visible << std::endl;
-        return EXIT_SUCCESS;
+    for(int i = 0; i < argc; i++){
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0){
+            print_help();
+        }else if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--type") == 0){
+            if(i + 1 == argc)
+                print_help();
+            type = argv[++i];
+        }else if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--path") == 0) {
+            if (i + 1 == argc)
+                print_help();
+            path = argv[++i];
+        }
     }
 
-    int result = arithmetic::add(variable_a, variable_b);
-    std::cout << result << std::endl;
+    if(type.empty() || path.empty())
+        print_help();
+
+    std::cout << "Parse: " << type << ". From: " << path << std::endl;
+    if(type == "FAT16")
+        parse_fat16(path);
+    else if(type == "EXT")
+        parse_ext(path);
+    else
+        print_help();
+
     return EXIT_SUCCESS;
 }
